@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>DressShop.Domain</RootNamespace>
+  </PropertyGroup>
+
+  <!--
+    Intentionally no PackageReferences and no ProjectReferences here.
+    The Domain project must never depend on EF Core, ASP.NET Core, or any
+    infrastructure concern - see ARCHITECTURE.md section 2.
+  -->
+
+</Project>

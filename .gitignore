@@ -1,0 +1,31 @@
+## .NET
+bin/
+obj/
+out/
+
+## Visual Studio / Rider / VS Code
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+
+## Test results
+[Tt]est[Rr]esult*/
+*.trx
+coverage/
+*.coverage
+*.coveragexml
+
+## EF Core
+*.db
+*.db-shm
+*.db-wal
+
+## Secrets - never commit real connection strings or keys
+appsettings.*.local.json
+secrets.json
+
+## OS
+.DS_Store
+Thumbs.db
