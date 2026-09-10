@@ -1,16 +1,26 @@
 using DressShop.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace DressShop.Application.Abstractions;
 
 public interface IApplicationDbContext
 {
+    DbSet<Profile> Profiles { get; }
+
     DbSet<Category> Categories { get; }
 
     DbSet<Product> Products { get; }
 
-    DatabaseFacade Database { get; }
+    DbSet<ProductImage> ProductImages { get; }
 
-    Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
+    DbSet<ProductVariant> ProductVariants { get; }
+
+    DbSet<Order> Orders { get; }
+
+    DbSet<OrderItem> OrderItems { get; }
+
+    DbSet<Review> Reviews { get; }
+
+    Task<int> SaveChangesAsync(
+        CancellationToken cancellationToken = default);
 }

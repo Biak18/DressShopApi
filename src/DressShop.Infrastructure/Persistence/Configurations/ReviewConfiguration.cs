@@ -8,8 +8,11 @@ public class ReviewConfiguration : IEntityTypeConfiguration<Review>
 {
     public void Configure(EntityTypeBuilder<Review> builder)
     {
-        builder.ToTable("reviews", t => t.HasCheckConstraint("ck_reviews_rating",
-            "\"rating\" >= 1 AND \"rating\" <= 5"));
+        builder.ToTable(
+            "reviews",
+            t => t.HasCheckConstraint(
+                "ck_reviews_rating",
+                "\"rating\" >= 1 AND \"rating\" <= 5"));
 
         builder.HasKey(r => r.Id);
 
@@ -44,9 +47,30 @@ public class ReviewConfiguration : IEntityTypeConfiguration<Review>
             .IsRequired()
             .HasDefaultValueSql("now()");
 
+        // User → Profile
+        builder.HasOne(r => r.User)
+            .WithMany()
+            .HasForeignKey(r => r.UserId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        // Product → Product
         builder.HasOne(r => r.Product)
             .WithMany(p => p.Reviews)
             .HasForeignKey(r => r.ProductId)
             .OnDelete(DeleteBehavior.NoAction);
+
+        // OrderItem → OrderItem
+        builder.HasOne(r => r.OrderItem)
+            .WithMany()
+            .HasForeignKey(r => r.OrderItemId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        // One review per user per product
+        builder.HasIndex(r => new
+        {
+            r.UserId,
+            r.ProductId
+        })
+        .IsUnique();
     }
 }

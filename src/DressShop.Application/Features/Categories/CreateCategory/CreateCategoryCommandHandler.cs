@@ -10,10 +10,6 @@ public class CreateCategoryCommandHandler(IApplicationDbContext context) : IRequ
 
     public async Task<Guid> Handle(CreateCategoryCommand request, CancellationToken cancellationToken)
     {
-        var canConnect = await context.Database.CanConnectAsync(cancellationToken);
-
-        Console.WriteLine($"Database connection: {canConnect}");
-
         var slugExists = await context.Categories
             .AnyAsync(c => c.Slug == request.Slug, cancellationToken);
 

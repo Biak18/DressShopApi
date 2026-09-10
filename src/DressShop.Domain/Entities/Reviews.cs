@@ -18,5 +18,10 @@ public class Review
 
     public DateTime UpdatedAt { get; set; }
 
+    // Relationships
+    public Profile User { get; set; } = null!;
+
     public Product Product { get; set; } = null!;
+
+    public OrderItem? OrderItem { get; set; }
 }
