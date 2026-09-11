@@ -8,7 +8,7 @@ public class FavoriteConfiguration : IEntityTypeConfiguration<Favorite>
 {
     public void Configure(EntityTypeBuilder<Favorite> builder)
     {
-        builder.ToTable("favorites:");
+        builder.ToTable("favorites");
 
         // PK
         builder.HasKey(f => f.Id);
