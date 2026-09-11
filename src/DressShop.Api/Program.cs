@@ -2,7 +2,6 @@ using System.Security.Claims;
 using DressShop.Api.Extensions;
 using DressShop.Api.Middleware;
 using DressShop.Application;
-using DressShop.Application.Features.Categories.CreateCategory;
 using DressShop.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -70,14 +69,18 @@ builder.Services.AddOpenApi(options => options.AddBearerSecurityScheme());
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-    app.MapScalarApiReference();
-}
+//if (app.Environment.IsDevelopment())
+//{
+app.MapOpenApi();
+app.MapScalarApiReference();
+//}
 
 app.UseExceptionHandler();
-app.UseHttpsRedirection();
+
+if (!app.Environment.IsProduction())
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseAuthentication();
 app.UseAuthorization();
