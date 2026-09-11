@@ -14,7 +14,6 @@ public class FavoritesController(ISender sender) : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateFavorite(
         Guid productId,
-        [FromBody] CreateFavoriteCommand command,
         CancellationToken cancellationToken)
     {
         var userId = GetUserId();
