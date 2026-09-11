@@ -1,7 +1,4 @@
 using DressShop.Application.Abstractions;
-using DressShop.Application.Features.Favorites.CreateFavorite;
-using DressShop.Application.Features.Favorites.DTOs;
-using DressShop.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -27,10 +24,8 @@ public class CreateFavoriteCommandHandler(
 
         var favorite = new Favorite
         {
-            Id = Guid.NewGuid(),
-            UserId = request.UserId,
             ProductId = request.ProductId,
-            CreatedAt = DateTime.UtcNow
+            UserId = request.UserId
         };
 
         context.Favorites.Add(favorite);
@@ -38,9 +33,9 @@ public class CreateFavoriteCommandHandler(
         await context.SaveChangesAsync(cancellationToken);
 
         return new FavoriteDto(
-            favorite.Id,
-            favorite.CreatedAt,
             favorite.UserId,
-            favorite.ProductId);
+            favorite.ProductId,
+            favorite.CreatedAt
+        );
     }
 }

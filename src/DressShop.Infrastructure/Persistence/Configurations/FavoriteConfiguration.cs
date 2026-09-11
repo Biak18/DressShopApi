@@ -1,4 +1,3 @@
-using DressShop.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -9,15 +8,11 @@ public class FavoriteConfiguration
     {
         builder.ToTable("favorites");
 
-        builder.HasKey(f => f.Id);
-
-        builder.Property(f => f.Id)
-            .HasColumnName("id");
-
-        builder.Property(f => f.CreatedAt)
-            .HasColumnName("created_at")
-            .IsRequired()
-            .HasDefaultValueSql("now()");
+        builder.HasKey(f => new
+        {
+            f.UserId,
+            f.ProductId
+        });
 
         builder.Property(f => f.UserId)
             .HasColumnName("user_id")
@@ -27,11 +22,9 @@ public class FavoriteConfiguration
             .HasColumnName("product_id")
             .IsRequired();
 
-        builder.HasIndex(f => new
-        {
-            f.UserId,
-            f.ProductId
-        })
-        .IsUnique();
+        builder.Property(f => f.CreatedAt)
+            .HasColumnName("created_at")
+            .IsRequired()
+            .HasDefaultValueSql("now()");
     }
 }

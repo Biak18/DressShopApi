@@ -1,5 +1,4 @@
 using System.Security.Claims;
-using DressShop.Application.Features.Favorites.CreateFavorite;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -30,8 +29,8 @@ public class FavoritesController(ISender sender) : ControllerBase
             cancellationToken);
 
         return Created(
-            $"/api/favorites/{result.Id}",
-            result);
+          $"/api/favorites/{result.ProductId}",
+          result);
     }
     private Guid? GetUserId()
     {
