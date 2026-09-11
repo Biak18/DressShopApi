@@ -1,4 +1,6 @@
 using System.Security.Claims;
+using DressShop.Application.Features.Favorites.CreateFavorite;
+using DressShop.Application.Features.Favorites.DeleteFavorite;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -32,6 +34,29 @@ public class FavoritesController(ISender sender) : ControllerBase
           $"/api/favorites/{result.ProductId}",
           result);
     }
+
+    [Authorize]
+    [HttpDelete("{productId:guid}")]
+    public async Task<IActionResult> DeleteFavorite(
+    Guid productId,
+    CancellationToken cancellationToken)
+    {
+        var userId = GetUserId();
+
+        if (userId is null)
+        {
+            return Unauthorized();
+        }
+
+        await sender.Send(
+            new DeleteFavoriteCommand(
+                userId.Value,
+                productId),
+            cancellationToken);
+
+        return NoContent();
+    }
+
     private Guid? GetUserId()
     {
         var userId = User.FindFirstValue("sub");

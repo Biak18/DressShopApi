@@ -1,3 +1,5 @@
+namespace DressShop.Domain.Entities;
+
 public class Favorite
 {
     public Guid UserId { get; set; }

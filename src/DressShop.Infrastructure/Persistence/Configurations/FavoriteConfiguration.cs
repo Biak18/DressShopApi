@@ -1,5 +1,8 @@
+using DressShop.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
+namespace DressShop.Infrastructure.Persistence.Configurations;
 
 public class FavoriteConfiguration
     : IEntityTypeConfiguration<Favorite>

@@ -1,4 +1,7 @@
 using DressShop.Application.Abstractions;
+using DressShop.Application.Features.Favorites.CreateFavorite;
+using DressShop.Application.Features.Favorites.DTOs;
+using DressShop.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
