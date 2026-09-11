@@ -23,10 +23,15 @@ public class FavoritesController(ISender sender) : ControllerBase
             return Unauthorized();
         }
 
+        var result = await sender.Send(
+            new CreateFavoriteCommand(
+                userId.Value,
+                productId),
+            cancellationToken);
 
-        var result = await sender.Send(new CreateFavoriteCommand(userId.Value, productId), cancellationToken);
-
-        return Created($"api/favorites/{result.Id}", result);
+        return Created(
+            $"/api/favorites/{result.Id}",
+            result);
     }
 
     private Guid? GetUserId()

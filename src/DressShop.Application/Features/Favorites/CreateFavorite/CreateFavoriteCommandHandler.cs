@@ -1,17 +1,18 @@
 using DressShop.Application.Abstractions;
+using DressShop.Application.Features.Favorites.CreateFavorite;
 using DressShop.Application.Features.Favorites.DTOs;
 using DressShop.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace DressShop.Application.Features.Favorites.CreateFavorite;
-
-public class CreateFavoriteCommandHandler(IApplicationDbContext context) : IRequestHandler<CreateFavoriteCommand, FavoriteDto>
+public class CreateFavoriteCommandHandler(
+    IApplicationDbContext context)
+    : IRequestHandler<CreateFavoriteCommand, FavoriteDto>
 {
-    public async Task<FavoriteDto> Handle(CreateFavoriteCommand request, CancellationToken cancellationToken)
+    public async Task<FavoriteDto> Handle(
+        CreateFavoriteCommand request,
+        CancellationToken cancellationToken)
     {
-
-        // Verify product exists
         var productExists = await context.Products
             .AsNoTracking()
             .AnyAsync(
@@ -26,19 +27,20 @@ public class CreateFavoriteCommandHandler(IApplicationDbContext context) : IRequ
 
         var favorite = new Favorite
         {
+            Id = Guid.NewGuid(),
+            UserId = request.UserId,
             ProductId = request.ProductId,
-            UserId = request.UserId
+            CreatedAt = DateTime.UtcNow
         };
 
         context.Favorites.Add(favorite);
-        await context.SaveChangesAsync();
+
+        await context.SaveChangesAsync(cancellationToken);
 
         return new FavoriteDto(
             favorite.Id,
             favorite.CreatedAt,
             favorite.UserId,
-            favorite.ProductId
-            );
-
+            favorite.ProductId);
     }
 }
