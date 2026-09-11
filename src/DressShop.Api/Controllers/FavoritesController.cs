@@ -13,8 +13,8 @@ public class FavoritesController(ISender sender) : ControllerBase
     [Authorize]
     [HttpPost]
     public async Task<IActionResult> CreateFavorite(
-        Guid productId,
-        CancellationToken cancellationToken)
+      [FromBody] CreateFavoriteRequest request,
+      CancellationToken cancellationToken)
     {
         var userId = GetUserId();
 
@@ -26,14 +26,13 @@ public class FavoritesController(ISender sender) : ControllerBase
         var result = await sender.Send(
             new CreateFavoriteCommand(
                 userId.Value,
-                productId),
+                request.ProductId),
             cancellationToken);
 
         return Created(
             $"/api/favorites/{result.Id}",
             result);
     }
-
     private Guid? GetUserId()
     {
         var userId = User.FindFirstValue("sub");
@@ -43,3 +42,4 @@ public class FavoritesController(ISender sender) : ControllerBase
             : null;
     }
 }
+public record CreateFavoriteRequest(Guid ProductId);
