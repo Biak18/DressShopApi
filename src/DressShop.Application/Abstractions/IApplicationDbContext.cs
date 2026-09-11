@@ -21,6 +21,8 @@ public interface IApplicationDbContext
 
     DbSet<Review> Reviews { get; }
 
+    DbSet<Favorite> Favorites { get; }
+
     Task<int> SaveChangesAsync(
         CancellationToken cancellationToken = default);
 }

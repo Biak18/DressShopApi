@@ -23,6 +23,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
 
+    public DbSet<Favorite> Favorites => Set<Favorite>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
