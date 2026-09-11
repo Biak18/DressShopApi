@@ -24,7 +24,7 @@ public class FavoritesController(ISender sender) : ControllerBase
         }
 
 
-        var result = await sender.Send(new CreateFavoriteCommand(productId, userId.Value), cancellationToken);
+        var result = await sender.Send(new CreateFavoriteCommand(userId.Value, productId), cancellationToken);
 
         return Created($"api/favorites/{result.Id}", result);
     }
