@@ -55,11 +55,14 @@ builder.Services.AddControllers();
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+
+// DI registration
 builder.Services.AddScoped<ITransactionManager, TransactionManager>();
 builder.Services.AddScoped<IStockService, StockService>();
 builder.Services.AddScoped<ILoyaltyService, LoyaltyService>();
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<ICurrentUser, CurrentUser>();
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
@@ -71,7 +74,6 @@ builder.Services.AddOpenApi(options => options.AddBearerSecurityScheme());
 
 builder.Services.AddHttpContextAccessor();
 
-builder.Services.AddScoped<ICurrentUser, CurrentUser>();
 
 // -----------------------------------------------------------------------------
 // App
