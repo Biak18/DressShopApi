@@ -27,6 +27,12 @@ public interface IApplicationDbContext
 
     DbSet<LoyaltyTransaction> LoyaltyTransactions { get; }
 
+    DbSet<CartItem> CartItems { get; }
+
+    DbSet<Notification> Notifications { get; }
+
+    DbSet<NotificationPreference> NotificationPreferences { get; }
+
     Task<int> SaveChangesAsync(
         CancellationToken cancellationToken = default);
 }

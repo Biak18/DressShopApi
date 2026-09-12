@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using DressShop.Application.Features.Orders.DTOs;
+using MediatR;
 
 namespace DressShop.Application.Features.Orders.CreateOrder;
 
-internal class CreateOrderCommand
-{
-}
+public record CreateOrderCommand(
+    Guid UserId,
+    CreateOrderRequest Request
+) : IRequest<OrderDto>;

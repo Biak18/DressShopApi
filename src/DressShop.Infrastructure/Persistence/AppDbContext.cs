@@ -30,6 +30,13 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<LoyaltyTransaction> LoyaltyTransactions
         => Set<LoyaltyTransaction>();
 
+    public DbSet<CartItem> CartItems => Set<CartItem>();
+
+    public DbSet<Notification> Notifications => Set<Notification>();
+
+    public DbSet<NotificationPreference> NotificationPreferences
+        => Set<NotificationPreference>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
