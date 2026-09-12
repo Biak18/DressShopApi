@@ -1,6 +1,5 @@
 using DressShop.Application.Abstractions;
 using DressShop.Infrastructure.Persistence;
-using DressShop.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,12 +18,12 @@ public static class DependencyInjection
 
 
 
-        services.AddDbContext<AppDbContext>(options =>
+        _ = services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(
                 connectionString,
                 sql => sql.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName)));
 
-        services.AddScoped<IApplicationDbContext>(provider =>
+        _ = services.AddScoped<IApplicationDbContext>(provider =>
     provider.GetRequiredService<AppDbContext>());
 
         var supabaseUrl = configuration["Supabase:Url"]?.TrimEnd('/')
@@ -33,16 +32,11 @@ public static class DependencyInjection
         var supabaseAnonKey = configuration["Supabase:AnonKey"]
      ?? throw new InvalidOperationException("Supabase:AnonKey is required.");
 
-        services.AddHttpClient<IProfilesClient, SupabaseProfilesClient>(client =>
-        {
-            client.BaseAddress = new Uri($"{supabaseUrl}/");
-        });
-
         // Repositories, IEmailService, IFileStorageService, etc. get
         // registered here as they're introduced - see ARCHITECTURE.md
         // section 7 for why their interfaces live in Application, not here. 
 
-        services.AddHttpClient<IAuthClient, Authentication.SupabaseAuthClient>(client =>
+        _ = services.AddHttpClient<IAuthClient, Authentication.SupabaseAuthClient>(client =>
         {
             client.BaseAddress = new Uri($"{supabaseUrl}/auth/v1/");
             client.DefaultRequestHeaders.Add("apikey", supabaseAnonKey);

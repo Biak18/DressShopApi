@@ -1,4 +1,4 @@
-using System.Security.Claims;
+using DressShop.Application.Abstractions;
 using DressShop.Application.Features.Reviews.CreateReview;
 using DressShop.Application.Features.Reviews.DeleteReview;
 using DressShop.Application.Features.Reviews.GetProductReviews;
@@ -13,7 +13,7 @@ namespace DressShop.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ReviewsController(ISender sender) : ControllerBase
+public class ReviewsController(ISender sender, ICurrentUser currentUser) : ControllerBase
 {
     // GET: api/products/{productId}/reviews
     [HttpGet("products/{productId:guid}/reviews")]
@@ -48,9 +48,7 @@ public class ReviewsController(ISender sender) : ControllerBase
         Guid productId,
         CancellationToken cancellationToken)
     {
-        var userId = GetUserId();
-
-        if (userId is null)
+        if (currentUser.UserId is not Guid userId)
         {
             return Unauthorized();
         }
@@ -58,7 +56,7 @@ public class ReviewsController(ISender sender) : ControllerBase
         var result = await sender.Send(
             new GetReviewEligibilityQuery(
                 productId,
-                userId.Value),
+                userId),
             cancellationToken);
 
         return Ok(result);
@@ -72,16 +70,14 @@ public class ReviewsController(ISender sender) : ControllerBase
         [FromBody] CreateReviewRequest request,
         CancellationToken cancellationToken)
     {
-        var userId = GetUserId();
-
-        if (userId is null)
+        if (currentUser.UserId is not Guid userId)
         {
             return Unauthorized();
         }
 
         var result = await sender.Send(
             new CreateReviewCommand(
-                userId.Value,
+                userId,
                 productId,
                 request.Rating,
                 request.Body),
@@ -100,9 +96,7 @@ public class ReviewsController(ISender sender) : ControllerBase
         [FromBody] UpdateReviewRequest request,
         CancellationToken cancellationToken)
     {
-        var userId = GetUserId();
-
-        if (userId is null)
+        if (currentUser.UserId is not Guid userId)
         {
             return Unauthorized();
         }
@@ -110,7 +104,7 @@ public class ReviewsController(ISender sender) : ControllerBase
         var result = await sender.Send(
             new UpdateReviewCommand(
                 reviewId,
-                userId.Value,
+                userId,
                 request.Rating,
                 request.Body),
             cancellationToken);
@@ -125,9 +119,7 @@ public class ReviewsController(ISender sender) : ControllerBase
         Guid reviewId,
         CancellationToken cancellationToken)
     {
-        var userId = GetUserId();
-
-        if (userId is null)
+        if (currentUser.UserId is not Guid userId)
         {
             return Unauthorized();
         }
@@ -135,19 +127,10 @@ public class ReviewsController(ISender sender) : ControllerBase
         await sender.Send(
             new DeleteReviewCommand(
                 reviewId,
-                userId.Value),
+                userId),
             cancellationToken);
 
         return NoContent();
-    }
-
-    private Guid? GetUserId()
-    {
-        var userId = User.FindFirstValue("sub");
-
-        return Guid.TryParse(userId, out var id)
-            ? id
-            : null;
     }
 }
 

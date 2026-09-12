@@ -1,4 +1,4 @@
-using System.Security.Claims;
+using DressShop.Application.Abstractions;
 using DressShop.Application.Features.Favorites.CreateFavorite;
 using DressShop.Application.Features.Favorites.DeleteFavorite;
 using DressShop.Application.Features.Favorites.GetFavoriteIds;
@@ -12,7 +12,7 @@ namespace DressShop.Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class FavoritesController(ISender sender) : ControllerBase
+public class FavoritesController(ISender sender, ICurrentUser currentUser) : ControllerBase
 {
     [Authorize]
     [HttpPost]
@@ -20,16 +20,14 @@ public class FavoritesController(ISender sender) : ControllerBase
       [FromBody] CreateFavoriteRequest request,
       CancellationToken cancellationToken)
     {
-        var userId = GetUserId();
-
-        if (userId is null)
+        if (currentUser.UserId is not Guid userId)
         {
             return Unauthorized();
         }
 
         var result = await sender.Send(
             new CreateFavoriteCommand(
-                userId.Value,
+                userId,
                 request.ProductId),
             cancellationToken);
 
@@ -44,16 +42,14 @@ public class FavoritesController(ISender sender) : ControllerBase
     Guid productId,
     CancellationToken cancellationToken)
     {
-        var userId = GetUserId();
-
-        if (userId is null)
+        if (currentUser.UserId is not Guid userId)
         {
             return Unauthorized();
         }
 
         await sender.Send(
             new DeleteFavoriteCommand(
-                userId.Value,
+                userId,
                 productId),
             cancellationToken);
 
@@ -65,15 +61,13 @@ public class FavoritesController(ISender sender) : ControllerBase
     public async Task<IActionResult> GetFavoriteIds(
     CancellationToken cancellationToken)
     {
-        var userId = GetUserId();
-
-        if (userId is null)
+        if (currentUser.UserId is not Guid userId)
         {
             return Unauthorized();
         }
 
         var result = await sender.Send(
-            new GetFavoriteIdsQuery(userId.Value),
+            new GetFavoriteIdsQuery(userId),
             cancellationToken);
 
         return Ok(result);
@@ -85,16 +79,14 @@ public class FavoritesController(ISender sender) : ControllerBase
     Guid productId,
     CancellationToken cancellationToken)
     {
-        var userId = GetUserId();
-
-        if (userId is null)
+        if (currentUser.UserId is not Guid userId)
         {
             return Unauthorized();
         }
 
         var isFavorite = await sender.Send(
             new GetFavoriteStatusQuery(
-                userId.Value,
+                userId,
                 productId),
             cancellationToken);
 
@@ -109,27 +101,16 @@ public class FavoritesController(ISender sender) : ControllerBase
     public async Task<IActionResult> GetWishlist(
     CancellationToken cancellationToken)
     {
-        var userId = GetUserId();
-
-        if (userId is null)
+        if (currentUser.UserId is not Guid userId)
         {
             return Unauthorized();
         }
 
         var result = await sender.Send(
-            new GetWishlistQuery(userId.Value),
+            new GetWishlistQuery(userId),
             cancellationToken);
 
         return Ok(result);
-    }
-
-    private Guid? GetUserId()
-    {
-        var userId = User.FindFirstValue("sub");
-
-        return Guid.TryParse(userId, out var id)
-            ? id
-            : null;
     }
 }
 public record CreateFavoriteRequest(Guid ProductId);
