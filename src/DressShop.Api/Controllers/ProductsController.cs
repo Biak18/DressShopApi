@@ -1,6 +1,6 @@
-using DressShop.Api.Controllers.Requests;
 using DressShop.Application.Features.Products.CreateProduct;
 using DressShop.Application.Features.Products.DeleteProduct;
+using DressShop.Application.Features.Products.DTOs;
 using DressShop.Application.Features.Products.GetProducts;
 using DressShop.Application.Features.Products.UpdateProduct;
 using MediatR;

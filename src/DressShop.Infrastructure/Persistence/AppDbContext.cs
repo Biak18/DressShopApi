@@ -25,6 +25,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
     public DbSet<Favorite> Favorites => Set<Favorite>();
 
+    public DbSet<LoyaltyAccount> LoyaltyAccounts => Set<LoyaltyAccount>();
+
+    public DbSet<LoyaltyTransaction> LoyaltyTransactions
+        => Set<LoyaltyTransaction>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -32,6 +37,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         // Applies every IEntityTypeConfiguration<T> found in this assembly,
         // so entity configuration stays next to the DbContext instead of
         // being hand-registered one by one as the model grows.
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+        _ = modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
     }
 }

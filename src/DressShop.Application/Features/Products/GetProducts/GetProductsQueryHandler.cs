@@ -108,18 +108,21 @@ public class GetProductsQueryHandler(
                     v.StockQuantity > 0));
         }
 
-        // Sorting
-        if (request.Sort == "top_rated")
+        // Product IDs
+        if (request.Ids is { Count: > 0 })
         {
-            query = query
+            query = query.Where(p =>
+                request.Ids.Contains(p.Id));
+        }
+
+        // Sorting
+        query = request.Sort == "top_rated"
+            ? query
                 .OrderByDescending(p =>
                     p.Reviews
                         .Average(r => (double?)r.Rating) ?? 0)
-                .ThenByDescending(p => p.CreatedAt);
-        }
-        else
-        {
-            query = request.Sort switch
+                .ThenByDescending(p => p.CreatedAt)
+            : request.Sort switch
             {
                 "price_asc" =>
                     query.OrderBy(p => p.BasePrice),
@@ -133,7 +136,6 @@ public class GetProductsQueryHandler(
                 _ =>
                     query.OrderByDescending(p => p.CreatedAt)
             };
-        }
 
         // Count before pagination
         var count = await query.CountAsync(cancellationToken);

@@ -8,61 +8,88 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
 {
     public void Configure(EntityTypeBuilder<Order> builder)
     {
-        builder.ToTable("orders");
+        _ = builder.ToTable("orders");
 
-        builder.HasKey(o => o.Id);
+        // Primary key
+        _ = builder.HasKey(o => o.Id);
 
-        builder.Property(o => o.Id)
+        _ = builder.Property(o => o.Id)
             .HasColumnName("id");
 
-        builder.Property(o => o.UserId)
+        // User
+        _ = builder.Property(o => o.UserId)
             .HasColumnName("user_id")
             .IsRequired();
 
-        builder.Property(o => o.Status)
+        // Status
+        _ = builder.Property(o => o.Status)
             .HasColumnName("status")
-            .IsRequired();
+            .IsRequired()
+            .HasMaxLength(50)
+            .HasDefaultValue("pending");
 
-        builder.Property(o => o.Subtotal)
+        // Subtotal
+        _ = builder.Property(o => o.Subtotal)
             .HasColumnName("subtotal")
+            .HasColumnType("numeric(10,2)")
             .IsRequired();
 
-        builder.Property(o => o.DiscountAmount)
-            .HasColumnName("discount_amount")
-            .IsRequired();
-
-        builder.Property(o => o.ShippingAmount)
+        // Shipping amount
+        _ = builder.Property(o => o.ShippingAmount)
             .HasColumnName("shipping_amount")
-            .IsRequired();
+            .HasColumnType("numeric(10,2)")
+            .IsRequired()
+            .HasDefaultValue(0);
 
-        builder.Property(o => o.Total)
+        // Discount amount
+        _ = builder.Property(o => o.DiscountAmount)
+            .HasColumnName("discount_amount")
+            .HasColumnType("numeric(10,2)")
+            .IsRequired()
+            .HasDefaultValue(0);
+
+        // Total
+        _ = builder.Property(o => o.Total)
             .HasColumnName("total")
+            .HasColumnType("numeric(10,2)")
             .IsRequired();
 
-        builder.Property(o => o.ShippingAddress)
+        // Shipping address
+        _ = builder.Property(o => o.ShippingAddress)
             .HasColumnName("shipping_address")
             .HasColumnType("jsonb");
 
-        builder.Property(o => o.CreatedAt)
+        // Created timestamp
+        _ = builder.Property(o => o.CreatedAt)
             .HasColumnName("created_at")
             .IsRequired()
             .HasDefaultValueSql("now()");
 
-        builder.Property(o => o.UpdatedAt)
+        // Updated timestamp
+        _ = builder.Property(o => o.UpdatedAt)
             .HasColumnName("updated_at")
             .IsRequired()
             .HasDefaultValueSql("now()");
 
-        // Order → Profile
-        builder.HasOne(o => o.User)
-            .WithMany()
-            .HasForeignKey(o => o.UserId)
-            .OnDelete(DeleteBehavior.NoAction);
+        // User relationship
+        // We intentionally don't add a Profile navigation here.
+        // user_id references profiles(id).
 
-        // Order → OrderItems
-        builder.HasMany(o => o.Items)
-            .WithOne(oi => oi.Order)
-            .HasForeignKey(oi => oi.OrderId)
-            .OnDelete(DeleteBehavior.NoAction);
+        // Order -> OrderItems
+        _ = builder.HasMany(o => o.Items)
+            .WithOne(i => i.Order)
+            .HasForeignKey(i => i.OrderId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Indexes
+        _ = builder.HasIndex(o => o.UserId)
+            .HasDatabaseName("orders_user_id_idx");
+
+        _ = builder.HasIndex(o => o.Status)
+            .HasDatabaseName("orders_status_idx");
+
+        _ = builder.HasIndex(o => o.CreatedAt)
+            .HasDatabaseName("orders_created_at_idx")
+            .IsDescending();
     }
 }

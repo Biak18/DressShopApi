@@ -23,6 +23,10 @@ public interface IApplicationDbContext
 
     DbSet<Favorite> Favorites { get; }
 
+    DbSet<LoyaltyAccount> LoyaltyAccounts { get; }
+
+    DbSet<LoyaltyTransaction> LoyaltyTransactions { get; }
+
     Task<int> SaveChangesAsync(
         CancellationToken cancellationToken = default);
 }

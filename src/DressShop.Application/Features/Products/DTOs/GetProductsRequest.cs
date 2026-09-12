@@ -1,4 +1,4 @@
-namespace DressShop.Api.Controllers.Requests;
+namespace DressShop.Application.Features.Products.DTOs;
 
 public record GetProductsRequest(
     int Page = 0,

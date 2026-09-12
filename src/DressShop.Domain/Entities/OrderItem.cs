@@ -12,17 +12,13 @@ public class OrderItem
 
     public string ProductName { get; set; } = string.Empty;
 
-    public int Quantity { get; set; }
+    public string? VariantDescription { get; set; }
 
     public decimal UnitPrice { get; set; }
 
-    public string? VariantDescription { get; set; }
+    public int Quantity { get; set; }
 
     public DateTime CreatedAt { get; set; }
 
     public Order Order { get; set; } = null!;
-
-    public Product? Product { get; set; }
-
-    public ProductVariant? Variant { get; set; }
 }

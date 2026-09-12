@@ -17,5 +17,6 @@ public record GetProductsQuery(
     string? Color = null,
     string? Size = null,
     bool? InStock = null,
-    string? Sort = null
+    string? Sort = null,
+    IReadOnlyList<Guid>? Ids = null
 ) : IRequest<PaginatedProductsDto>;

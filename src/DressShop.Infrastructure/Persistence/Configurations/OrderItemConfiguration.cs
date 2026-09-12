@@ -4,63 +4,83 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace DressShop.Infrastructure.Persistence.Configurations;
 
-public class OrderItemConfiguration : IEntityTypeConfiguration<OrderItem>
+public class OrderItemConfiguration
+    : IEntityTypeConfiguration<OrderItem>
 {
     public void Configure(EntityTypeBuilder<OrderItem> builder)
     {
-        builder.ToTable("order_items");
+        _ = builder.ToTable("order_items");
 
-        builder.HasKey(oi => oi.Id);
+        // Primary key
+        _ = builder.HasKey(i => i.Id);
 
-        builder.Property(oi => oi.Id)
+        _ = builder.Property(i => i.Id)
             .HasColumnName("id");
 
-        builder.Property(oi => oi.OrderId)
+        // Order
+        _ = builder.Property(i => i.OrderId)
             .HasColumnName("order_id")
             .IsRequired();
 
-        builder.Property(oi => oi.ProductId)
+        _ = builder.HasOne(i => i.Order)
+            .WithMany(o => o.Items)
+            .HasForeignKey(i => i.OrderId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Product
+        _ = builder.Property(i => i.ProductId)
             .HasColumnName("product_id");
 
-        builder.Property(oi => oi.VariantId)
+        _ = builder.HasOne<Product>()
+            .WithMany()
+            .HasForeignKey(i => i.ProductId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        // Variant
+        _ = builder.Property(i => i.VariantId)
             .HasColumnName("variant_id");
 
-        builder.Property(oi => oi.ProductName)
+        _ = builder.HasOne<ProductVariant>()
+            .WithMany()
+            .HasForeignKey(i => i.VariantId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        // Product name snapshot
+        _ = builder.Property(i => i.ProductName)
             .HasColumnName("product_name")
+            .IsRequired()
+            .HasMaxLength(500);
+
+        // Variant description snapshot
+        _ = builder.Property(i => i.VariantDescription)
+            .HasColumnName("variant_description")
+            .HasMaxLength(500);
+
+        // Unit price snapshot
+        _ = builder.Property(i => i.UnitPrice)
+            .HasColumnName("unit_price")
+            .HasColumnType("numeric(10,2)")
             .IsRequired();
 
-        builder.Property(oi => oi.Quantity)
+        // Quantity
+        _ = builder.Property(i => i.Quantity)
             .HasColumnName("quantity")
             .IsRequired();
 
-        builder.Property(oi => oi.UnitPrice)
-            .HasColumnName("unit_price")
-            .IsRequired();
-
-        builder.Property(oi => oi.VariantDescription)
-            .HasColumnName("variant_description");
-
-        builder.Property(oi => oi.CreatedAt)
+        // Created timestamp
+        _ = builder.Property(i => i.CreatedAt)
             .HasColumnName("created_at")
             .IsRequired()
             .HasDefaultValueSql("now()");
 
-        // Order → OrderItems
-        builder.HasOne(oi => oi.Order)
-            .WithMany(o => o.Items)
-            .HasForeignKey(oi => oi.OrderId)
-            .OnDelete(DeleteBehavior.NoAction);
+        // Indexes
+        _ = builder.HasIndex(i => i.OrderId)
+            .HasDatabaseName("order_items_order_id_idx");
 
-        // OrderItem → Product
-        builder.HasOne(oi => oi.Product)
-            .WithMany()
-            .HasForeignKey(oi => oi.ProductId)
-            .OnDelete(DeleteBehavior.NoAction);
+        _ = builder.HasIndex(i => i.ProductId)
+            .HasDatabaseName("order_items_product_id_idx");
 
-        // OrderItem → ProductVariant
-        builder.HasOne(oi => oi.Variant)
-            .WithMany()
-            .HasForeignKey(oi => oi.VariantId)
-            .OnDelete(DeleteBehavior.NoAction);
+        _ = builder.HasIndex(i => i.VariantId)
+            .HasDatabaseName("order_items_variant_id_idx");
     }
 }
