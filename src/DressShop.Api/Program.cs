@@ -1,7 +1,8 @@
-using System.Security.Claims;
 using DressShop.Api.Extensions;
 using DressShop.Api.Middleware;
+using DressShop.Api.Services;
 using DressShop.Application;
+using DressShop.Application.Abstractions;
 using DressShop.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -61,6 +62,10 @@ builder.Services.AddProblemDetails();
 // manually-typed Authorization headers in its test client are unreliable.
 builder.Services.AddOpenApi(options => options.AddBearerSecurityScheme());
 
+builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddScoped<ICurrentUser, CurrentUser>();
+
 // -----------------------------------------------------------------------------
 // App
 // -----------------------------------------------------------------------------
@@ -79,24 +84,13 @@ app.UseExceptionHandler();
 
 if (!app.Environment.IsProduction())
 {
-    app.UseHttpsRedirection();
+    _ = app.UseHttpsRedirection();
 }
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
-app.MapGet("/user", (ClaimsPrincipal principal) =>
-{
-    var claims = principal.Claims.ToDictionary(
-        c => c.Type,
-        c => c.Value
-    );
-
-    return Results.Ok(claims);
-})
-.RequireAuthorization();
 
 app.Run();
 

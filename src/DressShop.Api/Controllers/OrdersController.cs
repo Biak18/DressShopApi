@@ -1,4 +1,4 @@
-using System.Security.Claims;
+using DressShop.Application.Abstractions;
 using DressShop.Application.Features.Orders.DTOs;
 using DressShop.Application.Features.Orders.GetOrders;
 using MediatR;
@@ -11,31 +11,23 @@ namespace DressShop.Api.Controllers;
 [Route("api/orders")]
 [Authorize]
 public class OrdersController(
-    ISender sender
+    ISender sender,
+    ICurrentUser currentUser
 ) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<OrderDto>>> GetOrders(
         CancellationToken cancellationToken)
     {
-        var userId = GetUserId();
-
-        if (userId is null)
+        if (currentUser.UserId is not Guid userId)
         {
             return Unauthorized();
         }
 
         var orders = await sender.Send(
-            new GetOrdersQuery(userId.Value),
+            new GetOrdersQuery(userId),
             cancellationToken);
 
         return Ok(orders);
-    }
-
-    private Guid? GetUserId()
-    {
-        var userId = User.FindFirstValue("sub");
-
-        return Guid.TryParse(userId, out var parsedUserId) ? parsedUserId : null;
     }
 }
