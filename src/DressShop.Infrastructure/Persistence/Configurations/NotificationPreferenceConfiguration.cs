@@ -22,18 +22,13 @@ public sealed class NotificationPreferenceConfiguration
             .IsRequired()
             .HasDefaultValue(true);
 
-        builder.Property(x => x.Promotions)
-            .HasColumnName("promotions")
-            .IsRequired()
-            .HasDefaultValue(true);
-
-        builder.Property(x => x.PriceDrops)
-            .HasColumnName("price_drops")
-            .IsRequired()
-            .HasDefaultValue(true);
-
         builder.Property(x => x.BackInStock)
             .HasColumnName("back_in_stock")
+            .IsRequired()
+            .HasDefaultValue(true);
+
+        builder.Property(x => x.PriceDrop)
+            .HasColumnName("price_drop")
             .IsRequired()
             .HasDefaultValue(true);
 

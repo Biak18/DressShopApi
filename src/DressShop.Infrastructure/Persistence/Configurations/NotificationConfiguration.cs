@@ -30,25 +30,26 @@ public sealed class NotificationConfiguration
             .IsRequired();
 
         builder.Property(x => x.Body)
-            .HasColumnName("body")
-            .IsRequired();
+            .HasColumnName("body");
 
         builder.Property(x => x.Data)
             .HasColumnName("data")
             .HasColumnType("jsonb");
 
-        builder.Property(x => x.ReadAt)
-            .HasColumnName("read_at");
+        builder.Property(x => x.IsRead)
+            .HasColumnName("is_read")
+            .IsRequired()
+            .HasDefaultValue(false);
 
         builder.Property(x => x.CreatedAt)
             .HasColumnName("created_at")
             .IsRequired()
             .HasDefaultValueSql("now()");
 
-        builder.HasIndex(x => new
-        {
-            x.UserId,
-            x.CreatedAt
-        });
+        builder.HasIndex(x => x.UserId);
+
+        builder.HasIndex(x => x.IsRead);
+
+        builder.HasIndex(x => x.CreatedAt);
     }
 }
