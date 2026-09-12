@@ -1,3 +1,4 @@
+using DressShop.Api.Authorization;
 using DressShop.Api.Extensions;
 using DressShop.Api.Middleware;
 using DressShop.Api.Services;
@@ -7,8 +8,10 @@ using DressShop.Infrastructure;
 using DressShop.Infrastructure.Persistence;
 using DressShop.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -49,7 +52,16 @@ builder.Services
         };
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("Admin", policy =>
+    {
+        policy.RequireAuthenticatedUser();
+        policy.AddRequirements(new AdminRequirement());
+    });
+});
+
+builder.Services.AddScoped<IAuthorizationHandler, AdminAuthorizationHandler>();
 
 builder.Services.AddControllers();
 
