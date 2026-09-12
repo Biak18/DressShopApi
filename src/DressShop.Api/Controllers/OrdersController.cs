@@ -1,4 +1,5 @@
 using DressShop.Application.Abstractions;
+using DressShop.Application.Features.Orders.CancelOrder;
 using DressShop.Application.Features.Orders.CreateOrder;
 using DressShop.Application.Features.Orders.DTOs;
 using DressShop.Application.Features.Orders.GetOrder;
@@ -72,5 +73,26 @@ public sealed class OrdersController(
             nameof(GetOrder),
             new { id = order.Id },
             order);
+    }
+
+    [HttpPost("{id:guid}/cancel")]
+    public async Task<ActionResult<OrderDto>> CancelOrder(
+    Guid id,
+    CancellationToken cancellationToken)
+    {
+        if (currentUser.UserId is not Guid userId)
+        {
+            return Unauthorized();
+        }
+
+        var order = await sender.Send(
+            new CancelOrderCommand(
+                userId,
+                id),
+            cancellationToken);
+
+        return order is null
+            ? NotFound()
+            : Ok(order);
     }
 }

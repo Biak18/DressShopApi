@@ -56,4 +56,47 @@ public sealed class NotificationService(
                 CreatedAt = DateTime.UtcNow
             });
     }
+
+    public async Task CreateOrderCancelledAsync(
+    Guid userId,
+    Guid orderId,
+    CancellationToken cancellationToken)
+    {
+        var preference =
+            await context.NotificationPreferences
+                .AsNoTracking()
+                .FirstOrDefaultAsync(
+                    x => x.UserId == userId,
+                    cancellationToken);
+
+        if (preference is not null &&
+            !preference.OrderUpdates)
+        {
+            return;
+        }
+
+        var orderNumber =
+            orderId
+                .ToString()[..8]
+                .ToUpperInvariant();
+
+        var data = JsonSerializer.Serialize(
+            new
+            {
+                order_id = orderId
+            });
+
+        context.Notifications.Add(
+            new Notification
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                Type = "general",
+                Title = "Order cancelled",
+                Body =
+                    $"Your order #{orderNumber} has been cancelled.",
+                Data = data,
+                CreatedAt = DateTime.UtcNow
+            });
+    }
 }

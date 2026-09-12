@@ -7,4 +7,9 @@ public interface INotificationService
         Guid orderId,
         decimal total,
         CancellationToken cancellationToken);
+
+    Task CreateOrderCancelledAsync(
+    Guid userId,
+    Guid orderId,
+    CancellationToken cancellationToken);
 }

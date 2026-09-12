@@ -142,4 +142,62 @@ public sealed class LoyaltyService(
             _ => "bronze"
         };
     }
+
+    public async Task RestoreOrderLoyaltyAsync(
+    Guid userId,
+    Guid orderId,
+    CancellationToken cancellationToken)
+    {
+        var transactions = await context.LoyaltyTransactions
+            .Where(t =>
+                t.UserId == userId &&
+                t.OrderId == orderId)
+            .ToListAsync(cancellationToken);
+
+        if (transactions.Count == 0)
+        {
+            return;
+        }
+
+        var account = await context.LoyaltyAccounts
+            .FirstOrDefaultAsync(
+                a => a.UserId == userId,
+                cancellationToken);
+
+        if (account is null)
+        {
+            throw new InvalidOperationException(
+                "Loyalty account could not be found.");
+        }
+
+        foreach (var transaction in transactions)
+        {
+            if (transaction.Type == "earn")
+            {
+                account.Points -= transaction.Points;
+            }
+            else if (transaction.Type == "redeem")
+            {
+                // Redemption was already deducted from the account.
+                // Restore those points.
+                account.Points -= transaction.Points;
+
+                // Make the redemption available again.
+                transaction.OrderId = null;
+            }
+        }
+
+        account.Points = Math.Max(0, account.Points);
+        account.Tier = GetTier(account.Points);
+        account.UpdatedAt = DateTime.UtcNow;
+
+        // Earn transactions belong only to completed/active orders.
+        // Remove them when the order is cancelled.
+        var earnTransactions = transactions
+            .Where(t => t.Type == "earn")
+            .ToList();
+
+        context.LoyaltyTransactions.RemoveRange(
+            earnTransactions);
+    }
 }

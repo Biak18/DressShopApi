@@ -17,6 +17,11 @@ public interface ILoyaltyService
         Guid orderId,
         decimal orderTotal,
         CancellationToken cancellationToken);
+
+    Task RestoreOrderLoyaltyAsync(
+    Guid userId,
+    Guid orderId,
+    CancellationToken cancellationToken);
 }
 
 public sealed record PendingLoyaltyDiscount(
