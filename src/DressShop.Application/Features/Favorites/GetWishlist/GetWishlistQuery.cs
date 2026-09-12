@@ -1,4 +1,4 @@
-using DressShop.Application.Features.Products.DTOs
+using DressShop.Application.Features.Products.DTOs;
 using MediatR;
 
 namespace DressShop.Application.Features.Favorites.GetWishlist;
