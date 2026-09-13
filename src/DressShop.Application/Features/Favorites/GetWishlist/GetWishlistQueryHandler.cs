@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DressShop.Application.Features.Favorites.GetWishlist;
 
-public class GetWishlistQueryHandler(
+public sealed class GetWishlistQueryHandler(
     IApplicationDbContext context)
     : IRequestHandler<GetWishlistQuery, IReadOnlyList<ProductDto>>
 {
@@ -14,20 +14,11 @@ public class GetWishlistQueryHandler(
         GetWishlistQuery request,
         CancellationToken cancellationToken)
     {
-        var products = await context.Favorites
+        return await context.Favorites
             .AsNoTracking()
             .Where(f => f.UserId == request.UserId)
             .OrderByDescending(f => f.CreatedAt)
-            .Include(f => f.Product)
-                .ThenInclude(p => p.Category)
-            .Include(f => f.Product)
-                .ThenInclude(p => p.Images)
-            .Include(f => f.Product)
-                .ThenInclude(p => p.Variants)
             .Select(f => f.Product)
-            .ToListAsync(cancellationToken);
-
-        return products
             .Select(p => new ProductDto(
                 p.Id,
                 p.Name,
@@ -83,6 +74,6 @@ public class GetWishlistQueryHandler(
                     ))
                     .ToList()
             ))
-            .ToList();
+            .ToListAsync(cancellationToken);
     }
 }
