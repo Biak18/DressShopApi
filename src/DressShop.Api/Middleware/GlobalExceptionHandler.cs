@@ -44,6 +44,11 @@ public sealed class GlobalExceptionHandler(
                 "Authentication failed",
                 exception.Message),
 
+            AssistantException assistantException => (
+                StatusCodes.Status502BadGateway,
+                "Assistant unavailable",
+                assistantException.Message),
+
             _ => (
                 StatusCodes.Status500InternalServerError,
                 "An unexpected error occurred",

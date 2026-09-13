@@ -1,6 +1,7 @@
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 using DressShop.Application.Abstractions;
+using DressShop.Domain.Exceptions;
 using Microsoft.Extensions.Configuration;
 
 namespace DressShop.Infrastructure.Services;
@@ -31,8 +32,8 @@ public sealed class GeminiAssistantClient(
 
         if (string.IsNullOrWhiteSpace(apiKey))
         {
-            throw new InvalidOperationException(
-                "AI assistant is not configured.");
+            throw new AssistantException(
+                "AI assistant is not configured (Gemini:ApiKey).");
         }
 
         var model = configuration["Gemini:Model"] ?? DefaultModel;
@@ -48,7 +49,7 @@ public sealed class GeminiAssistantClient(
 
         if (contents.Count == 0)
         {
-            throw new InvalidOperationException("Message is required.");
+            throw new AssistantException("Message is required.");
         }
 
         var response = await httpClient.PostAsJsonAsync(
@@ -66,23 +67,22 @@ public sealed class GeminiAssistantClient(
 
         if (!response.IsSuccessStatusCode)
         {
-            throw new InvalidOperationException(
-                "AI assistant is temporarily unavailable.");
+            throw new AssistantException(
+                $"AI provider rejected the request ({(int)response.StatusCode}).");
         }
 
         var payload = await response.Content.ReadFromJsonAsync<GeminiResponse>(
             cancellationToken);
 
         var text = string.Concat(
-            payload?.Candidates
-                .FirstOrDefault()?
-                .Content?.Parts
-                .Select(p => p.Text) ?? []);
+            (payload?.Candidates ?? [])
+                .SelectMany(c => c.Content?.Parts ?? [])
+                .Select(p => p.Text));
 
         if (string.IsNullOrWhiteSpace(text))
         {
-            throw new InvalidOperationException(
-                "AI returned an empty response.");
+            throw new AssistantException(
+                "AI returned an empty response (prompt may have been blocked).");
         }
 
         return new AssistantReply(text.Trim());
