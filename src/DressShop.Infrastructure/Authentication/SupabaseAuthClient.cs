@@ -6,7 +6,10 @@ namespace DressShop.Infrastructure.Authentication;
 
 public sealed class SupabaseAuthClient(HttpClient httpClient) : IAuthClient
 {
-    public async Task<AuthResult> LoginAsync(string email, string password, CancellationToken cancellationToken)
+    public async Task<AuthResult> LoginAsync(
+        string email,
+        string password,
+        CancellationToken cancellationToken)
     {
         var response = await httpClient.PostAsJsonAsync(
             "token?grant_type=password",
@@ -15,20 +18,56 @@ public sealed class SupabaseAuthClient(HttpClient httpClient) : IAuthClient
 
         if (!response.IsSuccessStatusCode)
         {
-            // Supabase returns 400 with its own error body for bad credentials -
-            // normalize that into a plain 401 rather than leaking Supabase's
-            // response shape/status code through your own API.
-            throw new UnauthorizedAccessException("Invalid email or password.");
+            throw new UnauthorizedAccessException(
+                "Invalid email or password.");
         }
 
-        var payload = await response.Content.ReadFromJsonAsync<SupabaseTokenResponse>(cancellationToken)
-            ?? throw new InvalidOperationException("Supabase returned an empty token response.");
+        var payload =
+            await response.Content.ReadFromJsonAsync<SupabaseTokenResponse>(
+                cancellationToken)
+            ?? throw new InvalidOperationException(
+                "Supabase returned an empty token response.");
 
-        return new AuthResult(payload.AccessToken, payload.RefreshToken, payload.ExpiresIn);
+        return new AuthResult(
+            payload.AccessToken,
+            payload.RefreshToken,
+            payload.ExpiresIn);
+    }
+
+    public async Task<AuthResult> RefreshAsync(
+        string refreshToken,
+        CancellationToken cancellationToken)
+    {
+        var response = await httpClient.PostAsJsonAsync(
+            "token?grant_type=refresh_token",
+            new { refresh_token = refreshToken },
+            cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new UnauthorizedAccessException(
+                "Invalid or expired refresh token.");
+        }
+
+        var payload =
+            await response.Content.ReadFromJsonAsync<SupabaseTokenResponse>(
+                cancellationToken)
+            ?? throw new InvalidOperationException(
+                "Supabase returned an empty token response.");
+
+        return new AuthResult(
+            payload.AccessToken,
+            payload.RefreshToken,
+            payload.ExpiresIn);
     }
 
     private sealed record SupabaseTokenResponse(
-        [property: JsonPropertyName("access_token")] string AccessToken,
-        [property: JsonPropertyName("refresh_token")] string RefreshToken,
-        [property: JsonPropertyName("expires_in")] int ExpiresIn);
+        [property: JsonPropertyName("access_token")]
+        string AccessToken,
+
+        [property: JsonPropertyName("refresh_token")]
+        string RefreshToken,
+
+        [property: JsonPropertyName("expires_in")]
+        int ExpiresIn);
 }
