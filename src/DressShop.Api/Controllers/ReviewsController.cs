@@ -90,7 +90,7 @@ public class ReviewsController(ISender sender, ICurrentUser currentUser) : Contr
 
     // PUT: api/reviews/{reviewId}
     [Authorize]
-    [HttpPut("reviews/{reviewId:guid}")]
+    [HttpPut("{reviewId:guid}")]
     public async Task<IActionResult> UpdateReview(
         Guid reviewId,
         [FromBody] UpdateReviewRequest request,
@@ -114,7 +114,7 @@ public class ReviewsController(ISender sender, ICurrentUser currentUser) : Contr
 
     // DELETE: api/reviews/{reviewId}
     [Authorize]
-    [HttpDelete("reviews/{reviewId:guid}")]
+    [HttpDelete("{reviewId:guid}")]
     public async Task<IActionResult> DeleteReview(
         Guid reviewId,
         CancellationToken cancellationToken)

@@ -1,4 +1,5 @@
 using DressShop.Application.Abstractions;
+using DressShop.Application.Features.Profiles.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -28,8 +29,18 @@ public sealed class ProfilesController(
                 p => p.Id == userId,
                 cancellationToken);
 
-        return profile is null
-            ? NotFound()
-            : Ok(profile);
+        if (profile is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(new ProfileDto(
+            profile.Id,
+            profile.FullName,
+            profile.AvatarUrl,
+            profile.Role,
+            currentUser.Email,
+            profile.CreatedAt,
+            profile.UpdatedAt));
     }
 }

@@ -76,6 +76,13 @@ builder.Services.AddScoped<ICartItemWriter, CartItemWriter>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<ICurrentUser, CurrentUser>();
 
+// Gemini chat (server-side key via Gemini:ApiKey, optional Gemini:Model).
+// Unconfigured key fails at call time with a clear message, not at startup.
+builder.Services.AddHttpClient<IAssistantClient, GeminiAssistantClient>(client =>
+{
+    client.BaseAddress = new Uri("https://generativelanguage.googleapis.com/");
+});
+
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 

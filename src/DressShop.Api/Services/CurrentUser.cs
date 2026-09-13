@@ -28,4 +28,10 @@ public sealed class CurrentUser(
             .User?
             .Identity?
             .IsAuthenticated == true;
+
+    public string? Email =>
+        httpContextAccessor
+            .HttpContext?
+            .User?
+            .FindFirstValue("email");
 }
