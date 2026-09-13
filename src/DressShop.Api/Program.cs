@@ -72,7 +72,7 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddScoped<ITransactionManager, TransactionManager>();
 builder.Services.AddScoped<IStockService, StockService>();
 builder.Services.AddScoped<ILoyaltyService, LoyaltyService>();
-builder.Services.AddScoped<ICartService, CartService>();
+builder.Services.AddScoped<ICartItemWriter, CartItemWriter>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<ICurrentUser, CurrentUser>();
 

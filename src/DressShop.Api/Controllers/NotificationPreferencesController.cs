@@ -1,5 +1,8 @@
 using DressShop.Application.Abstractions;
 using DressShop.Application.Features.Notifications.DTOs;
+using DressShop.Application.Features.Notifications.GetNotificationPreferences;
+using DressShop.Application.Features.Notifications.UpdateNotificationPreferences;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,7 +12,7 @@ namespace DressShop.Api.Controllers;
 [Route("api/notification-preferences")]
 [Authorize]
 public sealed class NotificationPreferencesController(
-    INotificationService notificationService,
+    ISender sender,
     ICurrentUser currentUser
 ) : ControllerBase
 {
@@ -22,10 +25,9 @@ public sealed class NotificationPreferencesController(
             return Unauthorized();
         }
 
-        var preferences =
-            await notificationService.GetPreferencesAsync(
-                userId,
-                cancellationToken);
+        var preferences = await sender.Send(
+            new GetNotificationPreferencesQuery(userId),
+            cancellationToken);
 
         return Ok(preferences);
     }
@@ -40,11 +42,11 @@ public sealed class NotificationPreferencesController(
             return Unauthorized();
         }
 
-        var preferences =
-            await notificationService.UpdatePreferencesAsync(
+        var preferences = await sender.Send(
+            new UpdateNotificationPreferencesCommand(
                 userId,
-                request,
-                cancellationToken);
+                request),
+            cancellationToken);
 
         return Ok(preferences);
     }

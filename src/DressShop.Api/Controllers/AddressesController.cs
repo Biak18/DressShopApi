@@ -1,10 +1,10 @@
 using DressShop.Application.Abstractions;
-using DressShop.Application.Features.Cart.AddCartItem;
-using DressShop.Application.Features.Cart.ClearCart;
-using DressShop.Application.Features.Cart.DTOs;
-using DressShop.Application.Features.Cart.GetCart;
-using DressShop.Application.Features.Cart.RemoveCartItem;
-using DressShop.Application.Features.Cart.UpdateCartItem;
+using DressShop.Application.Features.Addresses.CreateAddress;
+using DressShop.Application.Features.Addresses.DeleteAddress;
+using DressShop.Application.Features.Addresses.DTOs;
+using DressShop.Application.Features.Addresses.GetAddresses;
+using DressShop.Application.Features.Addresses.SetDefaultAddress;
+using DressShop.Application.Features.Addresses.UpdateAddress;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,15 +12,15 @@ using Microsoft.AspNetCore.Mvc;
 namespace DressShop.Api.Controllers;
 
 [ApiController]
-[Route("api/cart")]
+[Route("api/addresses")]
 [Authorize]
-public sealed class CartController(
+public sealed class AddressesController(
     ISender sender,
     ICurrentUser currentUser
 ) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<CartItemDto>>> GetCart(
+    public async Task<ActionResult<IReadOnlyList<AddressDto>>> GetAddresses(
         CancellationToken cancellationToken)
     {
         if (currentUser.UserId is not Guid userId)
@@ -28,16 +28,16 @@ public sealed class CartController(
             return Unauthorized();
         }
 
-        var cart = await sender.Send(
-            new GetCartQuery(userId),
+        var result = await sender.Send(
+            new GetAddressesQuery(userId),
             cancellationToken);
 
-        return Ok(cart);
+        return Ok(result);
     }
 
-    [HttpPost("items")]
-    public async Task<IActionResult> AddToCart(
-        AddCartItemRequest request,
+    [HttpPost]
+    public async Task<ActionResult<AddressDto>> CreateAddress(
+        CreateAddressRequest request,
         CancellationToken cancellationToken)
     {
         if (currentUser.UserId is not Guid userId)
@@ -45,20 +45,21 @@ public sealed class CartController(
             return Unauthorized();
         }
 
-        await sender.Send(
-            new AddCartItemCommand(
+        var result = await sender.Send(
+            new CreateAddressCommand(
                 userId,
-                request.VariantId,
-                request.Quantity),
+                request),
             cancellationToken);
 
-        return NoContent();
+        return Created(
+            $"/api/addresses/{result.Id}",
+            result);
     }
 
-    [HttpPatch("items/{id:guid}")]
-    public async Task<IActionResult> UpdateQuantity(
+    [HttpPut("{id:guid}")]
+    public async Task<ActionResult<AddressDto>> UpdateAddress(
         Guid id,
-        UpdateCartItemRequest request,
+        UpdateAddressRequest request,
         CancellationToken cancellationToken)
     {
         if (currentUser.UserId is not Guid userId)
@@ -66,18 +67,18 @@ public sealed class CartController(
             return Unauthorized();
         }
 
-        await sender.Send(
-            new UpdateCartItemCommand(
+        var result = await sender.Send(
+            new UpdateAddressCommand(
                 userId,
                 id,
-                request.Quantity),
+                request),
             cancellationToken);
 
-        return NoContent();
+        return Ok(result);
     }
 
-    [HttpDelete("items/{id:guid}")]
-    public async Task<IActionResult> RemoveFromCart(
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> DeleteAddress(
         Guid id,
         CancellationToken cancellationToken)
     {
@@ -87,7 +88,7 @@ public sealed class CartController(
         }
 
         await sender.Send(
-            new RemoveCartItemCommand(
+            new DeleteAddressCommand(
                 userId,
                 id),
             cancellationToken);
@@ -95,8 +96,9 @@ public sealed class CartController(
         return NoContent();
     }
 
-    [HttpDelete]
-    public async Task<IActionResult> ClearCart(
+    [HttpPatch("{id:guid}/default")]
+    public async Task<IActionResult> SetDefaultAddress(
+        Guid id,
         CancellationToken cancellationToken)
     {
         if (currentUser.UserId is not Guid userId)
@@ -105,7 +107,9 @@ public sealed class CartController(
         }
 
         await sender.Send(
-            new ClearCartCommand(userId),
+            new SetDefaultAddressCommand(
+                userId,
+                id),
             cancellationToken);
 
         return NoContent();

@@ -37,6 +37,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<NotificationPreference> NotificationPreferences
         => Set<NotificationPreference>();
 
+    public DbSet<Address> Addresses => Set<Address>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

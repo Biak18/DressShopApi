@@ -13,7 +13,6 @@ public sealed class CreateOrderCommandHandler(
     ITransactionManager transactionManager,
     IStockService stockService,
     ILoyaltyService loyaltyService,
-    ICartService cartService,
     INotificationService notificationService
 ) : IRequestHandler<CreateOrderCommand, OrderDto>
 {
@@ -151,7 +150,7 @@ public sealed class CreateOrderCommandHandler(
             await loyaltyService.ConsumePendingRedemptionsAsync(
                 request.UserId,
                 order.Id,
-                 pendingDiscount.TransactionIds,
+                pendingDiscount.TransactionIds,
                 cancellationToken);
 
             await loyaltyService.EarnPointsAsync(
@@ -160,12 +159,14 @@ public sealed class CreateOrderCommandHandler(
                 order.Total,
                 cancellationToken);
 
-            await cartService.RemoveItemsAsync(
-                request.UserId,
-                request.Request.Items
-                .Select(x => x.VariantId)
-                .ToList(),
-                cancellationToken);
+            // Remove purchased variants from the user's cart.
+            // This is intentionally done here instead of using ICartService.
+            await context.CartItems
+                .Where(x =>
+                    x.UserId == request.UserId &&
+                    variantIds.Contains(x.VariantId))
+                .ExecuteDeleteAsync(
+                    cancellationToken);
 
             await notificationService.CreateOrderConfirmedAsync(
                 request.UserId,

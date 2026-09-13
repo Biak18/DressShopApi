@@ -1,5 +1,10 @@
 using DressShop.Application.Abstractions;
 using DressShop.Application.Features.Notifications.DTOs;
+using DressShop.Application.Features.Notifications.GetNotifications;
+using DressShop.Application.Features.Notifications.GetUnreadCount;
+using DressShop.Application.Features.Notifications.MarkAllNotificationsRead;
+using DressShop.Application.Features.Notifications.MarkNotificationRead;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,7 +14,7 @@ namespace DressShop.Api.Controllers;
 [Route("api/notifications")]
 [Authorize]
 public sealed class NotificationsController(
-    INotificationService notificationService,
+    ISender sender,
     ICurrentUser currentUser
 ) : ControllerBase
 {
@@ -22,10 +27,9 @@ public sealed class NotificationsController(
             return Unauthorized();
         }
 
-        var notifications =
-            await notificationService.ListAsync(
-                userId,
-                cancellationToken);
+        var notifications = await sender.Send(
+            new GetNotificationsQuery(userId),
+            cancellationToken);
 
         return Ok(notifications);
     }
@@ -39,10 +43,9 @@ public sealed class NotificationsController(
             return Unauthorized();
         }
 
-        var count =
-            await notificationService.GetUnreadCountAsync(
-                userId,
-                cancellationToken);
+        var count = await sender.Send(
+            new GetUnreadCountQuery(userId),
+            cancellationToken);
 
         return Ok(count);
     }
@@ -57,11 +60,11 @@ public sealed class NotificationsController(
             return Unauthorized();
         }
 
-        var updated =
-            await notificationService.MarkReadAsync(
+        var updated = await sender.Send(
+            new MarkNotificationReadCommand(
                 userId,
-                id,
-                cancellationToken);
+                id),
+            cancellationToken);
 
         return updated
             ? NoContent()
@@ -77,8 +80,8 @@ public sealed class NotificationsController(
             return Unauthorized();
         }
 
-        await notificationService.MarkAllReadAsync(
-            userId,
+        await sender.Send(
+            new MarkAllNotificationsReadCommand(userId),
             cancellationToken);
 
         return NoContent();
