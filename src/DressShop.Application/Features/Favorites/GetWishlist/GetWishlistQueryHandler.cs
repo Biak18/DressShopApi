@@ -15,11 +15,17 @@ public class GetWishlistQueryHandler(
         CancellationToken cancellationToken)
     {
         var products = await context.Favorites
-       .AsNoTracking()
-       .Where(f => f.UserId == request.UserId)
-       .OrderByDescending(f => f.CreatedAt)
-       .Select(f => f.Product)
-       .ToListAsync(cancellationToken);
+            .AsNoTracking()
+            .Where(f => f.UserId == request.UserId)
+            .OrderByDescending(f => f.CreatedAt)
+            .Include(f => f.Product)
+                .ThenInclude(p => p.Category)
+            .Include(f => f.Product)
+                .ThenInclude(p => p.Images)
+            .Include(f => f.Product)
+                .ThenInclude(p => p.Variants)
+            .Select(f => f.Product)
+            .ToListAsync(cancellationToken);
 
         return products
             .Select(p => new ProductDto(
