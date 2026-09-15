@@ -5,11 +5,13 @@ using DressShop.Application.Features.Notifications.UpdateNotificationPreferences
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace DressShop.Api.Controllers;
 
 [ApiController]
 [Route("api/notification-preferences")]
+[EnableRateLimiting("api")]
 [Authorize]
 public sealed class NotificationPreferencesController(
     ISender sender,

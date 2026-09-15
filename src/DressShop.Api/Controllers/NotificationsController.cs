@@ -7,11 +7,13 @@ using DressShop.Application.Features.Notifications.MarkNotificationRead;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace DressShop.Api.Controllers;
 
 [ApiController]
 [Route("api/notifications")]
+[EnableRateLimiting("api")]
 [Authorize]
 public sealed class NotificationsController(
     ISender sender,

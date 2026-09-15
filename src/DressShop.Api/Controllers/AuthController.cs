@@ -6,11 +6,13 @@ using DressShop.Application.Features.Auth.Register;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace DressShop.Api.Controllers;
 
 [ApiController]
 [Route("auth")]
+[EnableRateLimiting("auth")]
 public sealed class AuthController(ISender sender) : ControllerBase
 {
     [HttpPost("login")]

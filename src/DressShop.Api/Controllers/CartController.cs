@@ -8,11 +8,13 @@ using DressShop.Application.Features.Cart.UpdateCartItem;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace DressShop.Api.Controllers;
 
 [ApiController]
 [Route("api/cart")]
+[EnableRateLimiting("api")]
 [Authorize]
 public sealed class CartController(
     ISender sender,

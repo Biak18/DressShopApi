@@ -8,11 +8,13 @@ using DressShop.Application.Features.Addresses.UpdateAddress;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace DressShop.Api.Controllers;
 
 [ApiController]
 [Route("api/addresses")]
+[EnableRateLimiting("api")]
 [Authorize]
 public sealed class AddressesController(
     ISender sender,

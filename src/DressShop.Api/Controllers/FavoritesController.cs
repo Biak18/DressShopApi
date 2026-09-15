@@ -7,11 +7,13 @@ using DressShop.Application.Features.Favorites.GetWishlist;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace DressShop.Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
+[EnableRateLimiting("api")]
 public class FavoritesController(ISender sender, ICurrentUser currentUser) : ControllerBase
 {
     [Authorize]

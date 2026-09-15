@@ -1,3 +1,4 @@
+using System.Threading.RateLimiting;
 using DressShop.Api.Authorization;
 using DressShop.Api.Extensions;
 using DressShop.Api.Middleware;
@@ -93,6 +94,35 @@ builder.Services.AddOpenApi(options => options.AddBearerSecurityScheme());
 
 builder.Services.AddHttpContextAccessor();
 
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    options.AddPolicy("auth", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString()
+                ?? "unknown",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 5,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }));
+
+    options.AddPolicy("api", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.User.Identity?.IsAuthenticated == true
+                ? httpContext.User.FindFirst("sub")?.Value ?? "authenticated"
+                : httpContext.Connection.RemoteIpAddress?.ToString()
+                    ?? "unknown",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 60,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }));
+});
+
 
 // -----------------------------------------------------------------------------
 // App
@@ -101,6 +131,17 @@ builder.Services.AddHttpContextAccessor();
 
 
 var app = builder.Build();
+if (!app.Environment.IsProduction())
+{
+    _ = app.UseHttpsRedirection();
+}
+app.UseAuthentication();
+
+app.UseRateLimiter();
+
+app.UseAuthorization();
+
+app.MapControllers();
 
 //if (app.Environment.IsDevelopment())
 //{
@@ -109,16 +150,6 @@ app.MapScalarApiReference();
 //}
 
 app.UseExceptionHandler();
-
-if (!app.Environment.IsProduction())
-{
-    _ = app.UseHttpsRedirection();
-}
-
-app.UseAuthentication();
-app.UseAuthorization();
-
-app.MapControllers();
 
 app.Run();
 

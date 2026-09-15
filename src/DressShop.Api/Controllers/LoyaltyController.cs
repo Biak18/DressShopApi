@@ -6,11 +6,13 @@ using DressShop.Application.Features.Loyalty.Redeem;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace DressShop.Api.Controllers;
 
 [ApiController]
 [Route("api/loyalty")]
+[EnableRateLimiting("api")]
 [Authorize]
 public sealed class LoyaltyController(
     ISender sender,

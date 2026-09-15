@@ -3,11 +3,13 @@ using DressShop.Application.Features.Assistant.Chat;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace DressShop.Api.Controllers;
 
 [ApiController]
 [Route("api/assistant")]
+[EnableRateLimiting("api")]
 [Authorize]
 public sealed class AssistantController(
     ISender sender,

@@ -2,12 +2,14 @@ using DressShop.Application.Abstractions;
 using DressShop.Application.Features.Profiles.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 
 namespace DressShop.Api.Controllers;
 
 [ApiController]
 [Route("api/profiles")]
+[EnableRateLimiting("api")]
 [Authorize]
 public sealed class ProfilesController(
     IApplicationDbContext context,

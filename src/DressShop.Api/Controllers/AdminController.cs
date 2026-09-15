@@ -10,11 +10,13 @@ using DressShop.Application.Features.Orders.DTOs;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace DressShop.Api.Controllers;
 
 [ApiController]
 [Route("api/admin")]
+[EnableRateLimiting("api")]
 [Authorize(Policy = "Admin")]
 public sealed class AdminController(
     ISender sender

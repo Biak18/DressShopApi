@@ -7,11 +7,13 @@ using DressShop.Application.Features.Orders.GetOrders;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace DressShop.Api.Controllers;
 
 [ApiController]
 [Route("api/orders")]
+[EnableRateLimiting("api")]
 [Authorize]
 public sealed class OrdersController(
     ISender sender,

@@ -2,11 +2,13 @@ using DressShop.Application.Features.Categories.CreateCategory;
 using DressShop.Application.Features.Categories.GetCategories;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace DressShop.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[EnableRateLimiting("api")]
 public class CategoriesController(ISender sender) : ControllerBase
 {
 

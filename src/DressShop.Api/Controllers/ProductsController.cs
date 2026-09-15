@@ -5,11 +5,13 @@ using DressShop.Application.Features.Products.GetProducts;
 using DressShop.Application.Features.Products.UpdateProduct;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace DressShop.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[EnableRateLimiting("api")]
 public class ProductsController(ISender sender) : ControllerBase
 {
     [HttpGet]

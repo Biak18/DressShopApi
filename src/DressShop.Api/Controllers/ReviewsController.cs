@@ -8,11 +8,13 @@ using DressShop.Application.Features.Reviews.UpdateReview;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace DressShop.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[EnableRateLimiting("api")]
 public class ReviewsController(ISender sender, ICurrentUser currentUser) : ControllerBase
 {
     // GET: api/products/{productId}/reviews
