@@ -27,6 +27,7 @@ public sealed class GetAdminOrdersQueryHandler(
         return orders
             .Select(order => new OrderDto(
                 order.Id,
+                order.UserId,
                 order.Status,
                 order.Subtotal,
                 order.ShippingAmount,

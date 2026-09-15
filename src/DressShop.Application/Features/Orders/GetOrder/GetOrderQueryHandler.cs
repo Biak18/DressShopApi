@@ -20,6 +20,7 @@ public sealed class GetOrderQueryHandler(
                 o.UserId == request.UserId)
             .Select(o => new OrderDto(
                 o.Id,
+                o.UserId,
                 o.Status,
                 o.Subtotal,
                 o.ShippingAmount,

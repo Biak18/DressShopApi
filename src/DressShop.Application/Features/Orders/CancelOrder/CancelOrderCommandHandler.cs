@@ -93,6 +93,7 @@ public sealed class CancelOrderCommandHandler(
     {
         return new OrderDto(
             order.Id,
+            order.UserId,
             order.Status,
             order.Subtotal,
             order.ShippingAmount,

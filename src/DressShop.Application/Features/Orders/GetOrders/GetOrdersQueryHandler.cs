@@ -19,6 +19,7 @@ public class GetOrdersQueryHandler(
             .OrderByDescending(o => o.CreatedAt)
             .Select(o => new OrderDto(
                 o.Id,
+                o.UserId,
                 o.Status,
                 o.Subtotal,
                 o.ShippingAmount,

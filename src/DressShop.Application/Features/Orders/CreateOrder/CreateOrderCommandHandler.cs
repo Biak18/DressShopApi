@@ -181,6 +181,7 @@ public sealed class CreateOrderCommandHandler(
 
             return new OrderDto(
                 order.Id,
+                order.UserId,
                 order.Status,
                 order.Subtotal,
                 order.ShippingAmount,
