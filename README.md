@@ -1,96 +1,97 @@
 # DressShop.Api
 
-Scaffold for a dress-shop backend, following the Clean Architecture +
+DressShop backend — ASP.NET Core (.NET 10) following the Clean Architecture +
 Vertical Slice conventions in `ARCHITECTURE.md`.
 
-## What's in this commit (Task 1 — project setup only)
+## Stack
 
-This is deliberately just the skeleton: four `src` projects wired together
-with the correct dependency direction, two empty test projects, centralized
-package version management, and a working `/health` endpoint. **No entities,
-no controllers, no features yet** — that's Task 2, once you tell me what the
-first vertical slice should be (e.g. `CreateProduct`, `RegisterCustomer`).
+- **.NET 10** (`global.json` pins `10.0.100`, `rollForward: latestFeature`)
+- **PostgreSQL only** via `Npgsql.EntityFrameworkCore.PostgreSQL` (Supabase-hosted).
+  There is no SQL Server provider in this project.
+- **Supabase Auth** — JWT Bearer (`Supabase:Url` + `Supabase:AnonKey`), `Admin` policy
+  for back-office writes.
+- **MediatR** dispatch (`ISender.Send(...)`), FluentValidation pipeline,
+  centralized `GlobalExceptionHandler` → `ProblemDetails`.
+- **OpenAPI + Scalar** (`/openapi/v1.json`, `/scalar`). No `/health` endpoint by design.
+
+## Layout
 
 ```
 DressShop/
 ├── DressShop.sln
 ├── global.json                    # pins the SDK version
-├── Directory.Build.props          # shared compiler settings (nullable, warnings-as-errors)
-├── Directory.Packages.props       # central NuGet package versions
+├── Directory.Build.props          # nullable, warnings-as-errors, central package mgmt
+├── Directory.Packages.props       # central NuGet versions (EF 10.0.11 + Npgsql)
 ├── src/
-│   ├── DressShop.Domain/          # no dependencies, no NuGet packages
-│   ├── DressShop.Application/     # -> Domain. MediatR + FluentValidation wiring
-│   ├── DressShop.Infrastructure/  # -> Application, Domain. EF Core DbContext
-│   └── DressShop.Api/             # -> Application, Infrastructure. Program.cs, Swagger, global exception handler
+│   ├── DressShop.Domain/          # no dependencies, entities + domain exceptions
+│   ├── DressShop.Application/     # -> Domain. Features/* (commands, queries, handlers, validators, DTOs)
+│   ├── DressShop.Infrastructure/  # -> Application, Domain. AppDbContext, configs, Supabase/Gemini clients
+│   └── DressShop.Api/             # -> Application, Infrastructure. Controllers, auth, middleware
 └── tests/
     ├── DressShop.UnitTests/       # -> Domain, Application
-    └── DressShop.IntegrationTests/ # -> Api (WebApplicationFactory)
+    └── DressShop.IntegrationTests/ # -> Api (WebApplicationFactory boot test)
 ```
 
-## Assumptions made — flag these if wrong
+## Features
 
-1. **.NET 10 (LTS)** — originally scaffolded against .NET 8, retargeted after
-   confirming the SDKs actually installed were 9.0.317 / 10.0.400. .NET 10 is
-   the current LTS (even major versions — 6, 8, 10 — get long-term support;
-   odd ones like 9 are short-term). `global.json` now pins `10.0.100` with
-   `rollForward: latestFeature`, which will resolve to `10.0.400` or newer.
-2. **SQL Server** as the EF Core provider (`appsettings.json` connection string
-   targets LocalDB). If you'd rather use PostgreSQL or SQLite for local dev,
-   that's a one-line swap in `Infrastructure.csproj` and
-   `Infrastructure/DependencyInjection.cs` — say the word and I'll redo it.
-3. **MediatR** for the command/query dispatch (`ISender.Send(...)`), matching
-   the pattern in `ARCHITECTURE.md` section 6. This is a real dependency
-   decision, not free — MediatR adds an indirection layer and (in v12+) a
-   commercial license consideration for very large organizations. For a
-   learning project it's the standard, well-documented way to implement this
-   pattern; a hand-rolled dispatcher is a legitimate alternative if you want
-   one less dependency.
-4. Controllers, not Minimal API endpoints — easier to navigate as a beginner,
-   and what the architecture doc's examples assume.
+Public reads, authenticated writes, admin-only back office:
+
+| Area | Endpoints |
+|---|---|
+| Products | `GET /api/products`, `GET /api/products/{id}`, `GET /api/products/slug/{slug}` (public); `POST/PUT/DELETE` (Admin) |
+| Categories | `GET /api/categories` (public); `POST` (Admin). Full CRUD at `GET/POST/PUT/DELETE /api/admin/categories` (Admin) |
+| Cart | `GET/POST/PUT/DELETE /api/cart*` (authenticated) |
+| Orders | `GET/POST /api/orders` (authenticated); `PATCH /api/admin/orders/{id}/status`, `GET /api/admin/orders` (Admin) |
+| Favorites | `GET /api/favorites*`, wishlist + status/ids (authenticated) |
+| Reviews | `GET /api/products/{id}/reviews`, summary + eligibility; `POST/PUT/DELETE` (authenticated, owner) |
+| Loyalty | `GET /api/loyalty/*`, redeem 200/400/800-point tiers (authenticated) |
+| Notifications | `GET /api/notifications*`, mark read, preferences (authenticated) |
+| Addresses | `GET/POST/PUT/DELETE /api/addresses*` + set-default (authenticated) |
+| Profiles | `GET/PUT /api/profiles/me` (authenticated) |
+| Auth | `POST /api/auth/register|login|refresh|logout|forgot-password` (rate-limited `auth` policy) |
+| Admin | `GET /api/admin/stats|low-stock`, `PATCH /api/admin/products/{id}/active|variants/{id}/stock` (Admin) |
+| Assistant | `POST /api/assistant/chat` (Gemini, server-side key) |
+
+## Configuration — user-secrets (nothing to add manually to appsettings)
+
+`appsettings.json` ships with empty `ConnectionStrings:DefaultConnection` on purpose.
+Tables already exist in Supabase, so **no EF migrations are needed or run**.
+Required secrets live in user-secrets / environment:
+
+```bash
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=...;Database=...;Username=...;Password=..." --project src/DressShop.Api
+dotnet user-secrets set "Supabase:AnonKey" "<supabase-anon-key>" --project src/DressShop.Api
+# Optional: dotnet user-secrets set "Gemini:ApiKey" "<key>" --project src/DressShop.Api
+```
+
+`Supabase:Url` is in `appsettings.json`; override per environment if needed.
 
 ## Running it
 
 ```bash
-# restore & build
 dotnet restore
-dotnet build
+dotnet build      # 0 warnings, 0 errors
+dotnet test       # unit + Api boot test (OpenAPI is served)
 
-# apply migrations once you have entities + your first DbSet
-dotnet ef migrations add InitialCreate -p src/DressShop.Infrastructure -s src/DressShop.Api
-dotnet ef database update -p src/DressShop.Infrastructure -s src/DressShop.Api
-
-# run the API
 dotnet run --project src/DressShop.Api
-# -> Swagger UI at https://localhost:5443/swagger
-# -> Health check at https://localhost:5443/health
-
-# run tests
-dotnet test
+# -> Scalar UI at https://localhost:5443/scalar
+# -> OpenAPI at  https://localhost:5443/openapi/v1.json
 ```
 
-> This scaffold was generated without access to the .NET SDK (sandboxed
-> environment with no NuGet access), so it has **not** been through
-> `dotnet build` locally. The project files are hand-written to match exactly
-> what `dotnet new` + `dotnet add reference` would produce. Run `dotnet build`
-> as your first step — if something doesn't compile, it's most likely a NuGet
-> package version in `Directory.Packages.props` that's since been superseded;
-> bump it and retry.
+## Conventions (from ARCHITECTURE.md)
+
+- Thin controllers → `ISender.Send(command/query)` → handler → `IApplicationDbContext`/domain.
+  No `IProductRepository`/`ProductService` ceremony for plain CRUD (§45/46).
+- Validation (FluentValidation) = "is this request well-formed?"; domain rules =
+  "is this operation allowed?".
+- `InvalidOperationException` from handlers → `400`; `KeyNotFoundException` → `404`;
+  `DomainException` → `400`; `ValidationException` → `400`; unexpected → `500`
+  without leaking details.
+- Pagination/projection/`AsNoTracking` on reads; explicit transactions only where
+  multi-step writes must succeed/fail together (orders, loyalty redeem).
 
 ## Multiple NuGet sources / NU1507
 
-If you see `NU1507: ... There are 2 package sources defined ...`, that's not
-this scaffold's fault — it means your machine has more than one NuGet source
-configured globally (commonly added by other IDE tooling, e.g. DevExpress),
-and Central Package Management refuses to guess which source a pinned
-version should come from. `NuGet.Config` at the repo root fixes this by
-scoping this solution to `nuget.org` only, without touching your global
-NuGet settings. If you added other private feeds, add a `<package pattern>`
-entry per feed instead of relying on the `*` wildcard.
-
-## Why no repositories / services yet
-
-Per `ARCHITECTURE.md` section 45/46: don't add `IProductRepository` /
-`ProductService` layers until a feature actually needs them. `AppDbContext` is
-injected directly into feature handlers for simple CRUD. Introduce a
-repository or service only when it represents real reusable logic (pricing,
-tax, inventory allocation, etc.), not as a default pattern.
+If you see `NU1507: ... There are 2 package sources defined ...`, your machine has
+an extra global NuGet source (commonly from other IDE tooling). `NuGet.Config` at
+the repo root scopes this solution to `nuget.org` only.

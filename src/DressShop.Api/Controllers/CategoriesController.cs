@@ -1,6 +1,7 @@
 using DressShop.Application.Features.Categories.CreateCategory;
 using DressShop.Application.Features.Categories.GetCategories;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 
@@ -29,9 +30,10 @@ public class CategoriesController(ISender sender) : ControllerBase
     }
 
     /// <summary>
-    /// Create a new category
+    /// Create a new category (admin only - mirrors AdminController for legacy clients)
     /// </summary>
     [HttpPost]
+    [Authorize(Policy = "Admin")]
     public async Task<IActionResult> Create(
         [FromBody] CreateCategoryCommand command,
         CancellationToken cancellationToken)

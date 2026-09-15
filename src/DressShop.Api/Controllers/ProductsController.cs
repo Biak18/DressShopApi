@@ -4,6 +4,7 @@ using DressShop.Application.Features.Products.DTOs;
 using DressShop.Application.Features.Products.GetProducts;
 using DressShop.Application.Features.Products.UpdateProduct;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 
@@ -48,6 +49,7 @@ public class ProductsController(ISender sender) : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Policy = "Admin")]
     public async Task<IActionResult> Create(
         [FromBody] CreateProductCommand command,
         CancellationToken cancellationToken)
@@ -56,10 +58,14 @@ public class ProductsController(ISender sender) : ControllerBase
             command,
             cancellationToken);
 
-        return Ok(product);
+        return CreatedAtAction(
+            nameof(GetProductById),
+            new { id = product.Id },
+            product);
     }
 
     [HttpPut("{id:guid}")]
+    [Authorize(Policy = "Admin")]
     public async Task<IActionResult> Update(
         Guid id,
         [FromBody] UpdateProductRequest request,
@@ -84,6 +90,7 @@ public class ProductsController(ISender sender) : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
+    [Authorize(Policy = "Admin")]
     public async Task<IActionResult> Delete(
         Guid id,
         CancellationToken cancellationToken)

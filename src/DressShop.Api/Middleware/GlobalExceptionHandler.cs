@@ -39,6 +39,11 @@ public sealed class GlobalExceptionHandler(
                 "Resource not found",
                 "The requested resource could not be found."),
 
+            InvalidOperationException invalidOperationException => (
+                StatusCodes.Status400BadRequest,
+                "Invalid operation",
+                invalidOperationException.Message),
+
             UnauthorizedAccessException => (
                 StatusCodes.Status401Unauthorized,
                 "Authentication failed",
