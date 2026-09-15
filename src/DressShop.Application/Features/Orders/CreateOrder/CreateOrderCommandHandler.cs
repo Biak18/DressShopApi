@@ -147,6 +147,8 @@ public sealed class CreateOrderCommandHandler(
 
             context.Orders.Add(order);
 
+            await context.SaveChangesAsync(cancellationToken);
+
             await loyaltyService.ConsumePendingRedemptionsAsync(
                 request.UserId,
                 order.Id,
@@ -172,9 +174,6 @@ public sealed class CreateOrderCommandHandler(
                 request.UserId,
                 order.Id,
                 order.Total,
-                cancellationToken);
-
-            await context.SaveChangesAsync(
                 cancellationToken);
 
             await transaction.CommitAsync(
