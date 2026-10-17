@@ -151,6 +151,25 @@ app.MapScalarApiReference();
 
 app.UseExceptionHandler();
 
+// Liveness probe for hosts/cron pings (keeps free tiers awake).
+// Anonymous on purpose — returns no sensitive data.
+app.MapGet("/health", () =>
+    Results.Ok(new { status = "healthy", time = DateTimeOffset.UtcNow }))
+    .AllowAnonymous();
+
+// Readiness probe: also verifies Postgres connectivity.
+app.MapGet("/health/ready", async (
+    IApplicationDbContext db,
+    CancellationToken ct) =>
+{
+    var connected = await db.CanConnectAsync(ct);
+    return connected
+        ? Results.Ok(new { status = "ready", time = DateTimeOffset.UtcNow })
+        : Results.Json(
+            new { status = "unhealthy", reason = "database unreachable" },
+            statusCode: StatusCodes.Status503ServiceUnavailable);
+}).AllowAnonymous();
+
 app.Run();
 
 public partial class Program;

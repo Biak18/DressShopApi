@@ -39,6 +39,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
     public DbSet<Address> Addresses => Set<Address>();
 
+    public Task<bool> CanConnectAsync(CancellationToken cancellationToken = default) => Database.CanConnectAsync(cancellationToken);
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
